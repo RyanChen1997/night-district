@@ -1,0 +1,100 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+<title>夜游街区</title>
+<style>
+html,body{margin:0;width:100%;height:100%;background:#11172a;color:#f8eddf;font-family:system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif}
+[hidden]{display:none!important}#viewport{position:relative;width:100%;height:100%;overflow:hidden}#room{position:relative;width:100%;height:100%;overflow:hidden}#boot{position:absolute;z-index:6;top:0;right:0;bottom:0;left:0;background:linear-gradient(90deg,#101725,rgba(16,23,37,.10));display:flex;align-items:center;padding:10%;box-sizing:border-box}#boot h1{margin:0;color:#f7e6c9;font-size:48px;letter-spacing:.08em}.scene{display:block;position:absolute;top:0;left:0;width:100%;height:100%;background:#151c32}
+@media (orientation:portrait){#room{position:absolute;top:0;left:0;width:100vh;height:100vw;transform-origin:0 0;transform:translateX(100vw) rotate(90deg)}}
+</style>
+<link rel="stylesheet" href="./ui.css">
+<script defer src="./map.js"></script>
+<script defer src="./game.js"></script>
+<script defer src="./render.js"></script>
+<script defer src="./platform.js"></script>
+<script defer src="./input.js"></script>
+<script defer src="./audio.js"></script>
+<script defer src="./main.js"></script>
+</head>
+<body>
+<div id="viewport">
+<main id="room" tabindex="-1" aria-label="夜游街区游戏">
+  <div id="surface" aria-hidden="true">
+    <canvas class="scene" id="view" aria-label="街区画面"></canvas>
+    <canvas class="scene" id="simple-view" aria-label="街区简图" hidden></canvas>
+    <div id="skyline"></div>
+  </div>
+  <div id="safe-probe" aria-hidden="true"></div>
+  <section id="boot" aria-labelledby="boot-title">
+    <div class="title-copy">
+      <p class="title-kicker"><span></span> 蓝汐河岸 / 雨后</p>
+      <h1 id="boot-title">夜游街区</h1>
+      <p class="title-line">沿河兜风，或走进夜市的小巷。</p>
+      <button id="start-game" class="pill primary" type="button" disabled>开始游戏 <span aria-hidden="true">›</span></button>
+      <p id="boot-status" role="status">正在准备街区。若长时间停在这里，请关闭后重新进入。</p>
+      <noscript><p>当前环境未运行游戏脚本。</p></noscript>
+    </div>
+    <div class="title-chapter" aria-hidden="true"><span>蓝汐</span><span>夜间开放</span></div>
+  </section>
+  <section id="hud" aria-label="游戏操作" hidden>
+    <div id="hud-top">
+      <canvas id="minimap" width="176" height="176" role="img" aria-label="街区小地图：北方在上，任务以方形标注"></canvas>
+      <div id="status">
+        <div class="district-name">夜游街区</div>
+        <div id="area"></div>
+        <div id="wanted" aria-label="通缉等级"></div>
+        <div id="phase"></div>
+        <div id="vitals" hidden><progress id="health" aria-label="体力" max="100" value="100"></progress> <span id="danger"></span></div>
+      </div>
+      <button id="pause" class="pause pill" type="button" aria-label="暂停与操作说明">Ⅱ</button>
+    </div>
+    <div id="task-status" hidden></div>
+    <div id="crosshair" aria-hidden="true" hidden></div>
+    <p id="notice" aria-live="polite"></p>
+    <div id="layout">
+      <div class="move-control">
+        <div id="stick" aria-hidden="true"><span class="stick-axis"></span><span id="thumb"></span></div>
+        <span id="steer-label" class="micro">走 / 跑</span>
+      </div>
+      <div class="actions">
+        <div class="action-row"><button id="task" class="pill context" type="button" data-game-tap hidden>开始任务</button><button id="door" class="pill context" type="button" data-game-tap hidden>上车</button></div>
+        <div class="action-row">
+          <button id="arm" class="pill minor" type="button" data-game-tap>拔枪</button>
+          <button id="punch" class="pill primary" type="button" data-game-tap>出拳</button>
+          <button id="fire" class="pill primary" type="button" data-game-tap hidden>发射</button>
+          <button id="brake" class="pill minor" type="button" hidden>刹 / 倒</button>
+          <button id="gas" class="pill primary" type="button" hidden>油门</button>
+        </div>
+        <div id="drive-label" class="micro">拖动空地 · 镜头</div>
+      </div>
+    </div>
+  </section>
+  <div id="result" class="result-layer" hidden>
+    <section class="result-panel" role="dialog" aria-modal="true" aria-labelledby="result-title">
+      <p class="micro dialog-tag">巡逻事件 / 本次结果</p>
+      <h2 id="result-title"></h2>
+      <p id="result-detail"></p>
+      <button id="recover" class="pill primary" type="button">返回便利店</button>
+    </section>
+  </div>
+  <dialog id="pause-dialog" role="dialog" aria-labelledby="pause-title" aria-modal="true" hidden>
+    <div class="dialog-inner">
+      <p class="micro dialog-tag">夜游街区 · 操作说明</p>
+      <h2 id="pause-title">暂停</h2>
+      <ul>
+        <li><span aria-hidden="true">✥</span><div><strong>步行</strong>　左摇杆轻推走、推满跑。右侧空地拖镜头。空手可出拳。靠近慢车车门可抢车，会触发通缉。</div></li>
+        <li><span aria-hidden="true">⇆</span><div><strong>驾驶</strong>　左摇杆横推转向，右侧按住油门或刹车；刹停继续按即倒车。低速可下车。</div></li>
+        <li><span aria-hidden="true">⊙</span><div><strong>信号枪</strong>　徒步可拔枪、拖移准星、点按发射、收枪；弹药有限，车内不可用。</div></li>
+      </ul>
+      <details><summary>键盘辅助</summary><p>WASD / 方向键移动和驾驶，Shift 跑，E 车门，F 任务，Q 拔 / 收枪，R 出拳，空格发射，Esc 暂停。鼠标拖镜头。</p></details>
+      <p id="save-status" class="micro"></p>
+      <button id="sound-toggle" class="pill minor" type="button">声音：待开启</button>
+      <button id="resume" class="pill primary" type="button">继续漫游</button>
+    </div>
+  </dialog>
+</main>
+</div>
+</body>
+</html>

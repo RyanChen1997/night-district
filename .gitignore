@@ -1,0 +1,17 @@
+# Local agent configuration, builds, and upload/preview artifacts
+/.pi/
+/dist/
+/.taste-skill/
+/release-assets/generated/
+/docs/.minitool-online.md
+/docs/小红书小工具个人开发与变现调研.md
+
+# Machine files and credentials
+.DS_Store
+node_modules/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+*.log
