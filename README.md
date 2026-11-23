@@ -4,8 +4,6 @@
 
 <h1 align="center">夜游街区</h1>
 
-<p align="center"><strong>雨刚停。便利店还亮着灯，沿河兜一圈再回家。</strong></p>
-
 <p align="center">
   <img src="docs/gameplay.png" width="650" alt="游戏画面：夜雨后的街区、便利店、车辆和双指操作界面">
 </p>
